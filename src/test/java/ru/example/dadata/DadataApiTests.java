@@ -5,6 +5,7 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.example.dadata.dto.AddressSuggestionRequest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
@@ -64,11 +65,10 @@ class DadataApiTests {
     @Test
     @DisplayName("POST: получение подсказок по адресу")
     void shouldSuggestAddress() {
-        String requestBody = """
-                {
-                  "query": "Москва, Тверская улица, 1"
-                }
-                """;
+        AddressSuggestionRequest requestBody =
+                new AddressSuggestionRequest(
+                        "Москва, Тверская улица, 1"
+                );
 
         given()
                 .header("Authorization", "Token " + apiKey)
