@@ -19,6 +19,7 @@ public final class DadataSpecifications {
                         "Authorization",
                         "Token " + DadataConfig.getApiKey()
                 )
+                .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
                 .build();
     }

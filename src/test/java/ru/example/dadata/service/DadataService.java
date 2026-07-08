@@ -1,6 +1,5 @@
 package ru.example.dadata.service;
 
-import io.restassured.http.ContentType;
 import ru.example.dadata.model.request.AddressSuggestionRequest;
 import ru.example.dadata.model.response.AddressSuggestionResponse;
 import ru.example.dadata.model.response.IpLocateResponse;
@@ -33,7 +32,6 @@ public class DadataService {
     ) {
         return given()
                 .spec(requestSpecification())
-                .contentType(ContentType.JSON)
                 .body(requestBody)
                 .when()
                 .post(SUGGEST_ADDRESS)
