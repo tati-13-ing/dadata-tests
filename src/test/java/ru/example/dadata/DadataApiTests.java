@@ -10,10 +10,14 @@ import ru.example.dadata.dto.AddressResult;
 import ru.example.dadata.dto.AddressSuggestionRequest;
 import ru.example.dadata.dto.AddressSuggestionResponse;
 import ru.example.dadata.dto.IpLocateResponse;
+import ru.example.dadata.config.DadataConfig;
 
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static ru.example.dadata.config.DadataConfig.BASE_URL;
+import static ru.example.dadata.constant.DadataEndpoints.IP_LOCATE_ADDRESS;
+import static ru.example.dadata.constant.DadataEndpoints.SUGGEST_ADDRESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,8 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DadataApiTests {
 
-    private static final String BASE_URL =
-            "https://suggestions.dadata.ru";
 
     private static final String IP_ADDRESS =
             "46.226.227.20";
@@ -31,13 +33,7 @@ class DadataApiTests {
 
     @BeforeAll
     static void setUp() {
-        apiKey = System.getenv("DADATA_API_KEY");
-
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException(
-                    "Не задана переменная окружения DADATA_API_KEY"
-            );
-        }
+        apiKey = DadataConfig.getApiKey();
 
         RestAssured.baseURI = BASE_URL;
     }
@@ -49,8 +45,9 @@ class DadataApiTests {
                 .header("Authorization", "Token " + apiKey)
                 .accept(ContentType.JSON)
                 .queryParam("ip", IP_ADDRESS)
+
                 .when()
-                .get("/suggestions/api/4_1/rs/iplocate/address")
+                .get(IP_LOCATE_ADDRESS)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
@@ -108,7 +105,7 @@ class DadataApiTests {
                 .accept(ContentType.JSON)
                 .body(requestBody)
                 .when()
-                .post("/suggestions/api/4_1/rs/suggest/address")
+                .post(SUGGEST_ADDRESS)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
