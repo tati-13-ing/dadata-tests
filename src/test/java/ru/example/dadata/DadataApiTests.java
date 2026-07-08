@@ -1,24 +1,16 @@
 package ru.example.dadata;
 
-import io.restassured.http.ContentType;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.specification.RequestSpecification;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.example.dadata.dto.AddressData;
-import ru.example.dadata.dto.AddressResult;
-import ru.example.dadata.dto.AddressSuggestionRequest;
-import ru.example.dadata.dto.AddressSuggestionResponse;
-import ru.example.dadata.dto.IpLocateResponse;
-import ru.example.dadata.config.DadataConfig;
+import ru.example.dadata.model.request.AddressSuggestionRequest;
+import ru.example.dadata.model.response.AddressData;
+import ru.example.dadata.model.response.AddressResult;
+import ru.example.dadata.model.response.AddressSuggestionResponse;
+import ru.example.dadata.model.response.IpLocateResponse;
+import ru.example.dadata.service.DadataService;
 
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
-import static ru.example.dadata.config.DadataConfig.BASE_URL;
-import static ru.example.dadata.constant.DadataEndpoints.IP_LOCATE_ADDRESS;
-import static ru.example.dadata.constant.DadataEndpoints.SUGGEST_ADDRESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,38 +18,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DadataApiTests {
 
-
     private static final String IP_ADDRESS =
             "46.226.227.20";
 
-    private RequestSpecification requestSpecification;
+    private static final String ADDRESS_QUERY =
+            "Москва, Тверская улица, 1";
 
-    @BeforeEach
-    void setUp() {
-        requestSpecification = new RequestSpecBuilder()
-                .setBaseUri(BASE_URL)
-                .addHeader(
-                        "Authorization",
-                        "Token " + DadataConfig.getApiKey()
-                )
-                .setAccept(ContentType.JSON)
-                .build();
-    }
+    private final DadataService dadataService =
+            new DadataService();
 
     @Test
     @DisplayName("GET: определение города по IP-адресу")
     void shouldDetectAddressByIp() {
-        IpLocateResponse response = given()
-                .spec(requestSpecification)
-                .queryParam("ip", IP_ADDRESS)
-                .when()
-                .get(IP_LOCATE_ADDRESS)
-                .then()
-                .log().ifValidationFails()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .extract()
-                .as(IpLocateResponse.class);
+        IpLocateResponse response =
+                dadataService.detectAddressByIp(
+                        IP_ADDRESS
+                );
 
         assertNotNull(
                 response,
@@ -69,14 +45,16 @@ class DadataApiTests {
                 "Поле location не должно быть null"
         );
 
-        AddressResult location = response.getLocation();
+        AddressResult location =
+                response.getLocation();
 
         assertNotNull(
                 location.getData(),
                 "В location должен присутствовать объект data"
         );
 
-        AddressData data = location.getData();
+        AddressData data =
+                location.getData();
 
         assertEquals(
                 "RU",
@@ -100,21 +78,13 @@ class DadataApiTests {
     void shouldSuggestAddress() {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
-                        "Москва, Тверская улица, 1"
+                        ADDRESS_QUERY
                 );
 
-        AddressSuggestionResponse response = given()
-                .spec(requestSpecification)
-                .contentType(ContentType.JSON)
-                .body(requestBody)
-                .when()
-                .post(SUGGEST_ADDRESS)
-                .then()
-                .log().ifValidationFails()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .extract()
-                .as(AddressSuggestionResponse.class);
+        AddressSuggestionResponse response =
+                dadataService.suggestAddress(
+                        requestBody
+                );
 
         assertNotNull(
                 response,
@@ -148,7 +118,9 @@ class DadataApiTests {
         );
 
         assertTrue(
-                firstSuggestion.getValue().contains("Москва"),
+                firstSuggestion
+                        .getValue()
+                        .contains("Москва"),
                 "Первая подсказка должна содержать слово Москва"
         );
 
@@ -157,7 +129,8 @@ class DadataApiTests {
                 "В подсказке должен присутствовать объект data"
         );
 
-        AddressData data = firstSuggestion.getData();
+        AddressData data =
+                firstSuggestion.getData();
 
         assertEquals(
                 "RU",

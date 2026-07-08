@@ -1,4 +1,4 @@
-package ru.example.dadata.constant;
+package ru.example.dadata.config;
 
 public final class DadataEndpoints {
 

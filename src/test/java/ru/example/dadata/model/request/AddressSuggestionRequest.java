@@ -1,4 +1,4 @@
-package ru.example.dadata.dto;
+package ru.example.dadata.model.request;
 
 public class AddressSuggestionRequest {
 

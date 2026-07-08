@@ -1,4 +1,4 @@
-package ru.example.dadata.dto;
+package ru.example.dadata.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
