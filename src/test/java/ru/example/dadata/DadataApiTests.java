@@ -1,8 +1,9 @@
 package ru.example.dadata;
 
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.BeforeAll;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.specification.RequestSpecification;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.example.dadata.dto.AddressData;
@@ -29,23 +30,26 @@ class DadataApiTests {
     private static final String IP_ADDRESS =
             "46.226.227.20";
 
-    private static String apiKey;
+    private RequestSpecification requestSpecification;
 
-    @BeforeAll
-    static void setUp() {
-        apiKey = DadataConfig.getApiKey();
-
-        RestAssured.baseURI = BASE_URL;
+    @BeforeEach
+    void setUp() {
+        requestSpecification = new RequestSpecBuilder()
+                .setBaseUri(BASE_URL)
+                .addHeader(
+                        "Authorization",
+                        "Token " + DadataConfig.getApiKey()
+                )
+                .setAccept(ContentType.JSON)
+                .build();
     }
 
     @Test
     @DisplayName("GET: определение города по IP-адресу")
     void shouldDetectAddressByIp() {
         IpLocateResponse response = given()
-                .header("Authorization", "Token " + apiKey)
-                .accept(ContentType.JSON)
+                .spec(requestSpecification)
                 .queryParam("ip", IP_ADDRESS)
-
                 .when()
                 .get(IP_LOCATE_ADDRESS)
                 .then()
@@ -100,9 +104,8 @@ class DadataApiTests {
                 );
 
         AddressSuggestionResponse response = given()
-                .header("Authorization", "Token " + apiKey)
+                .spec(requestSpecification)
                 .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
                 .body(requestBody)
                 .when()
                 .post(SUGGEST_ADDRESS)
