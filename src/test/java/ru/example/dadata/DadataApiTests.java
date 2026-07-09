@@ -3,11 +3,16 @@ package ru.example.dadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.example.dadata.model.request.AddressSuggestionRequest;
+import ru.example.dadata.model.request.IdentifierRequest;
 import ru.example.dadata.model.response.AddressData;
 import ru.example.dadata.model.response.AddressResult;
 import ru.example.dadata.model.response.AddressSuggestionResponse;
 import ru.example.dadata.model.response.IpLocateResponse;
 import ru.example.dadata.service.DadataService;
+import ru.example.dadata.model.response.BankSearchResponse;
+import ru.example.dadata.model.response.BankSuggestion;
+import ru.example.dadata.model.response.PartySearchResponse;
+import ru.example.dadata.model.response.PartySuggestion;
 
 import java.util.List;
 
@@ -23,6 +28,12 @@ class DadataApiTests {
 
     private static final String ADDRESS_QUERY =
             "Москва, Тверская улица, 1";
+
+    private static final String SBERBANK_INN =
+            "7707083893";
+
+    private static final String SBERBANK_BIC =
+            "044525225";
 
     private final DadataService dadataService =
             new DadataService();
@@ -136,6 +147,92 @@ class DadataApiTests {
                 "RU",
                 data.getCountryIsoCode(),
                 "Код страны должен быть RU"
+        );
+    }
+    @Test
+    @DisplayName("POST: поиск банка по БИК")
+    void shouldFindBankByBic() {
+        IdentifierRequest requestBody =
+                new IdentifierRequest(
+                        SBERBANK_BIC
+                );
+
+        BankSearchResponse response =
+                dadataService.findBankById(
+                        requestBody
+                );
+
+        assertNotNull(
+                response,
+                "Ответ не должен быть null"
+        );
+
+        assertNotNull(
+                response.getSuggestions(),
+                "Поле suggestions не должно быть null"
+        );
+
+        List<BankSuggestion> suggestions =
+                response.getSuggestions();
+
+        assertFalse(
+                suggestions.isEmpty(),
+                "DaData должна вернуть банк"
+        );
+
+        assertTrue(
+                suggestions.stream()
+                        .map(BankSuggestion::getData)
+                        .filter(data -> data != null)
+                        .anyMatch(data ->
+                                SBERBANK_BIC.equals(
+                                        data.getBic()
+                                )
+                        ),
+                "Ответ должен содержать заданный БИК"
+        );
+    }
+    @Test
+    @DisplayName("POST: поиск организации по ИНН")
+    void shouldFindPartyByInn() {
+        IdentifierRequest requestBody =
+                new IdentifierRequest(
+                        SBERBANK_INN
+                );
+
+        PartySearchResponse response =
+                dadataService.findPartyById(
+                        requestBody
+                );
+
+        assertNotNull(
+                response,
+                "Ответ не должен быть null"
+        );
+
+        assertNotNull(
+                response.getSuggestions(),
+                "Поле suggestions не должно быть null"
+        );
+
+        List<PartySuggestion> suggestions =
+                response.getSuggestions();
+
+        assertFalse(
+                suggestions.isEmpty(),
+                "DaData должна вернуть организацию"
+        );
+
+        assertTrue(
+                suggestions.stream()
+                        .map(PartySuggestion::getData)
+                        .filter(data -> data != null)
+                        .anyMatch(data ->
+                                SBERBANK_INN.equals(
+                                        data.getInn()
+                                )
+                        ),
+                "Ответ должен содержать заданный ИНН"
         );
     }
 }
