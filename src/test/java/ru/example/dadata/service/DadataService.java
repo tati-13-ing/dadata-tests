@@ -1,5 +1,6 @@
 package ru.example.dadata.service;
 
+import io.restassured.response.Response;
 import ru.example.dadata.model.request.AddressSuggestionRequest;
 import ru.example.dadata.model.request.IdentifierRequest;
 import ru.example.dadata.model.response.AddressSuggestionResponse;
@@ -14,6 +15,8 @@ import static ru.example.dadata.config.DadataEndpoints.IP_LOCATE_ADDRESS;
 import static ru.example.dadata.config.DadataEndpoints.SUGGEST_ADDRESS;
 import static ru.example.dadata.specification.DadataSpecifications.requestSpecification;
 import static ru.example.dadata.specification.DadataSpecifications.successfulResponseSpecification;
+import static ru.example.dadata.specification.DadataSpecifications.requestSpecificationWithToken;
+import static ru.example.dadata.specification.DadataSpecifications.requestSpecificationWithoutToken;
 
 public class DadataService {
 
@@ -45,6 +48,26 @@ public class DadataService {
                 .spec(successfulResponseSpecification())
                 .extract()
                 .as(AddressSuggestionResponse.class);
+    }
+    public Response suggestAddressWithToken(
+            AddressSuggestionRequest requestBody,
+            String token
+    ) {
+        return given()
+                .spec(requestSpecificationWithToken(token))
+                .body(requestBody)
+                .when()
+                .post(SUGGEST_ADDRESS);
+    }
+
+    public Response suggestAddressWithoutToken(
+            AddressSuggestionRequest requestBody
+    ) {
+        return given()
+                .spec(requestSpecificationWithoutToken())
+                .body(requestBody)
+                .when()
+                .post(SUGGEST_ADDRESS);
     }
 
     public PartySearchResponse findPartyById(

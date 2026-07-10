@@ -13,15 +13,32 @@ public final class DadataSpecifications {
     }
 
     public static RequestSpecification requestSpecification() {
-        return new RequestSpecBuilder()
-                .setBaseUri(DadataConfig.getBaseUrl())
+        return requestSpecificationWithToken(
+                DadataConfig.getApiKey()
+        );
+    }
+
+    public static RequestSpecification requestSpecificationWithToken(
+            String token
+    ) {
+        return baseRequestSpecificationBuilder()
                 .addHeader(
                         "Authorization",
-                        "Token " + DadataConfig.getApiKey()
+                        "Token " + token
                 )
-                .setContentType(ContentType.JSON)
-                .setAccept(ContentType.JSON)
                 .build();
+    }
+
+    public static RequestSpecification requestSpecificationWithoutToken() {
+        return baseRequestSpecificationBuilder()
+                .build();
+    }
+
+    private static RequestSpecBuilder baseRequestSpecificationBuilder() {
+        return new RequestSpecBuilder()
+                .setBaseUri(DadataConfig.getBaseUrl())
+                .setContentType(ContentType.JSON)
+                .setAccept(ContentType.JSON);
     }
 
     public static ResponseSpecification
