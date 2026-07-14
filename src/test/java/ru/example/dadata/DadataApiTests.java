@@ -14,6 +14,7 @@ import ru.example.dadata.model.response.BankSearchResponse;
 import ru.example.dadata.model.response.BankSuggestion;
 import ru.example.dadata.model.response.PartySearchResponse;
 import ru.example.dadata.model.response.PartySuggestion;
+import ru.example.dadata.config.TestDataConfig;
 
 import java.util.List;
 
@@ -25,30 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DadataApiTests {
 
-    private static final String IP_ADDRESS =
-            "46.226.227.20";
-
-    private static final String ADDRESS_QUERY =
-            "Москва, Тверская улица, 1";
-
-    private static final String EMPTY_QUERY =
-            "";
-
-    private static final String SHORT_QUERY =
-            "#";
-
-    private static final String IP_WITHOUT_RESULT =
-            "192.0.2.1";
-
-    private static final String INVALID_TOKEN =
-            "invalid-token";
-
-    private static final String SBERBANK_INN =
-            "7707083893";
-
-    private static final String SBERBANK_BIC =
-            "044525225";
-
     private final DadataService dadataService =
             new DadataService();
 
@@ -57,7 +34,7 @@ class DadataApiTests {
     void shouldDetectAddressByIp() {
         IpLocateResponse response =
                 dadataService.detectAddressByIp(
-                        IP_ADDRESS
+                        TestDataConfig.getIpAddress()
                 );
 
         assertNotNull(
@@ -82,9 +59,10 @@ class DadataApiTests {
                 location.getData();
 
         assertEquals(
-                "RU",
+                TestDataConfig
+                        .getExpectedCountryCode(),
                 data.getCountryIsoCode(),
-                "Код страны должен быть RU"
+                "Код страны должен соответствовать ожидаемому"
         );
 
         assertNotNull(
@@ -103,7 +81,7 @@ class DadataApiTests {
     void shouldSuggestAddress() {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
-                        ADDRESS_QUERY
+                        TestDataConfig.getAddressQuery()
                 );
 
         AddressSuggestionResponse response =
@@ -145,7 +123,10 @@ class DadataApiTests {
         assertTrue(
                 firstSuggestion
                         .getValue()
-                        .contains("Москва"),
+                        .contains(
+                                TestDataConfig
+                                        .getExpectedAddressFragment()
+                        ),
                 "Первая подсказка должна содержать слово Москва"
         );
 
@@ -158,9 +139,10 @@ class DadataApiTests {
                 firstSuggestion.getData();
 
         assertEquals(
-                "RU",
+                TestDataConfig
+                        .getExpectedCountryCode(),
                 data.getCountryIsoCode(),
-                "Код страны должен быть RU"
+                "Код страны должен соответствовать ожидаемому"
         );
     }
     @Test
@@ -168,7 +150,7 @@ class DadataApiTests {
     void shouldFindBankByBic() {
         IdentifierRequest requestBody =
                 new IdentifierRequest(
-                        SBERBANK_BIC
+                        TestDataConfig.getSberbankBic()
                 );
 
         BankSearchResponse response =
@@ -199,9 +181,11 @@ class DadataApiTests {
                         .map(BankSuggestion::getData)
                         .filter(data -> data != null)
                         .anyMatch(data ->
-                                SBERBANK_BIC.equals(
-                                        data.getBic()
-                                )
+                                TestDataConfig
+                                        .getSberbankBic()
+                                        .equals(
+                                                data.getBic()
+                                        )
                         ),
                 "Ответ должен содержать заданный БИК"
         );
@@ -211,7 +195,7 @@ class DadataApiTests {
     void shouldFindPartyByInn() {
         IdentifierRequest requestBody =
                 new IdentifierRequest(
-                        SBERBANK_INN
+                        TestDataConfig.getSberbankInn()
                 );
 
         PartySearchResponse response =
@@ -242,9 +226,11 @@ class DadataApiTests {
                         .map(PartySuggestion::getData)
                         .filter(data -> data != null)
                         .anyMatch(data ->
-                                SBERBANK_INN.equals(
-                                        data.getInn()
-                                )
+                                TestDataConfig
+                                        .getSberbankInn()
+                                        .equals(
+                                                data.getInn()
+                                        )
                         ),
                 "Ответ должен содержать заданный ИНН"
         );
@@ -254,19 +240,20 @@ class DadataApiTests {
     void shouldRejectInvalidToken() {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
-                        ADDRESS_QUERY
+                        TestDataConfig.getAddressQuery()
                 );
 
         Response response =
                 dadataService.suggestAddressWithToken(
                         requestBody,
-                        INVALID_TOKEN
+                        TestDataConfig.getInvalidToken()
                 );
 
         assertEquals(
-                403,
+                TestDataConfig
+                        .getInvalidTokenStatus(),
                 response.statusCode(),
-                "Для невалидного token ожидается статус 403"
+                "Для невалидного token ожидается заданный статус"
         );
     }
     @Test
@@ -274,7 +261,7 @@ class DadataApiTests {
     void shouldRejectRequestWithoutToken() {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
-                        ADDRESS_QUERY
+                        TestDataConfig.getAddressQuery()
                 );
 
         Response response =
@@ -283,9 +270,10 @@ class DadataApiTests {
                 );
 
         assertEquals(
-                401,
+                TestDataConfig
+                        .getMissingTokenStatus(),
                 response.statusCode(),
-                "Для запроса без token ожидается статус 401"
+                "Для запроса без token ожидается заданный статус"
         );
     }
     @Test
@@ -293,7 +281,7 @@ class DadataApiTests {
     void shouldReturnEmptySuggestionsForEmptyQuery() {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
-                        EMPTY_QUERY
+                        TestDataConfig.getEmptyQuery()
                 );
 
         AddressSuggestionResponse response =
@@ -321,7 +309,7 @@ class DadataApiTests {
     void shouldReturnEmptySuggestionsForShortQuery() {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
-                        SHORT_QUERY
+                        TestDataConfig.getShortQuery()
                 );
 
         AddressSuggestionResponse response =
@@ -349,7 +337,7 @@ class DadataApiTests {
     void shouldReturnNullLocationForUnknownIp() {
         IpLocateResponse response =
                 dadataService.detectAddressByIp(
-                        IP_WITHOUT_RESULT
+                        TestDataConfig.getIpWithoutResult()
                 );
 
         assertNotNull(

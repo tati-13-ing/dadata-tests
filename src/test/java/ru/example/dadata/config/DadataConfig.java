@@ -2,9 +2,6 @@ package ru.example.dadata.config;
 
 public final class DadataConfig {
 
-    private static final String BASE_URL =
-            "https://suggestions.dadata.ru";
-
     private static final String API_KEY_ENV_NAME =
             "DADATA_API_KEY";
 
@@ -12,11 +9,12 @@ public final class DadataConfig {
     }
 
     public static String getBaseUrl() {
-        return BASE_URL;
+        return ConfigReader.get("base.url");
     }
 
     public static String getApiKey() {
-        String apiKey = System.getenv(API_KEY_ENV_NAME);
+        String apiKey =
+                System.getenv(API_KEY_ENV_NAME);
 
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException(
