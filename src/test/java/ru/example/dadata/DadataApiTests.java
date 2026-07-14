@@ -3,6 +3,9 @@ package ru.example.dadata;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import ru.example.dadata.model.request.AddressSuggestionRequest;
 import ru.example.dadata.model.request.IdentifierRequest;
 import ru.example.dadata.model.response.AddressData;
@@ -17,6 +20,7 @@ import ru.example.dadata.model.response.PartySuggestion;
 import ru.example.dadata.config.TestDataConfig;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -276,62 +280,55 @@ class DadataApiTests {
                 "Для запроса без token ожидается заданный статус"
         );
     }
-    @Test
-    @DisplayName("POST: пустой query возвращает пустой список подсказок")
-    void shouldReturnEmptySuggestionsForEmptyQuery() {
+
+    @DisplayName("POST: некорректный query возвращает пустой список подсказок")
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("queriesWithoutSuggestions")
+    void shouldReturnEmptySuggestionsForInvalidQuery(
+            String scenarioName,
+            String query
+    ) {
         AddressSuggestionRequest requestBody =
                 new AddressSuggestionRequest(
+                        query
+                );
+
+        AddressSuggestionResponse response =
+                dadataService.suggestAddress(
+                        requestBody
+                );
+
+        assertNotNull(
+                response,
+                "Ответ не должен быть null. Сценарий: "
+                        + scenarioName
+        );
+
+        assertNotNull(
+                response.getSuggestions(),
+                "Поле suggestions не должно быть null. Сценарий: "
+                        + scenarioName
+        );
+
+        assertTrue(
+                response.getSuggestions().isEmpty(),
+                "Список suggestions должен быть пустым. Сценарий: "
+                        + scenarioName
+        );
+    }
+    static Stream<Arguments> queriesWithoutSuggestions() {
+        return Stream.of(
+                Arguments.of(
+                        "пустой query",
                         TestDataConfig.getEmptyQuery()
-                );
-
-        AddressSuggestionResponse response =
-                dadataService.suggestAddress(
-                        requestBody
-                );
-
-        assertNotNull(
-                response,
-                "Ответ не должен быть null"
-        );
-
-        assertNotNull(
-                response.getSuggestions(),
-                "Поле suggestions не должно быть null"
-        );
-
-        assertTrue(
-                response.getSuggestions().isEmpty(),
-                "Для пустого query список suggestions должен быть пустым"
-        );
-    }
-    @Test
-    @DisplayName("POST: короткий query без совпадений возвращает пустой список")
-    void shouldReturnEmptySuggestionsForShortQuery() {
-        AddressSuggestionRequest requestBody =
-                new AddressSuggestionRequest(
+                ),
+                Arguments.of(
+                        "короткий query без совпадений",
                         TestDataConfig.getShortQuery()
-                );
-
-        AddressSuggestionResponse response =
-                dadataService.suggestAddress(
-                        requestBody
-                );
-
-        assertNotNull(
-                response,
-                "Ответ не должен быть null"
-        );
-
-        assertNotNull(
-                response.getSuggestions(),
-                "Поле suggestions не должно быть null"
-        );
-
-        assertTrue(
-                response.getSuggestions().isEmpty(),
-                "Для короткого query без совпадений список должен быть пустым"
+                )
         );
     }
+
     @Test
     @DisplayName("GET: IP без результата возвращает location = null")
     void shouldReturnNullLocationForUnknownIp() {
