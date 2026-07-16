@@ -134,7 +134,8 @@ class DadataApiTests {
                                 TestDataConfig
                                         .getExpectedAddressFragment()
                         ),
-                "Первая подсказка должна содержать слово Москва"
+                "Среди подсказок должен присутствовать адрес, содержащий: "
+                        + TestDataConfig.getExpectedAddressFragment()
         );
 
         assertNotNull(
