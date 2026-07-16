@@ -185,8 +185,13 @@ class DadataApiTests {
 
         assertTrue(
                 suggestions.stream()
+                        .filter(suggestion ->
+                                suggestion != null
+                        )
                         .map(BankSuggestion::getData)
-                        .filter(data -> data != null)
+                        .filter(data ->
+                                data != null
+                        )
                         .anyMatch(data ->
                                 TestDataConfig
                                         .getSberbankBic()
@@ -230,8 +235,13 @@ class DadataApiTests {
 
         assertTrue(
                 suggestions.stream()
+                        .filter(suggestion ->
+                                suggestion != null
+                        )
                         .map(PartySuggestion::getData)
-                        .filter(data -> data != null)
+                        .filter(data ->
+                                data != null
+                        )
                         .anyMatch(data ->
                                 TestDataConfig
                                         .getSberbankInn()
