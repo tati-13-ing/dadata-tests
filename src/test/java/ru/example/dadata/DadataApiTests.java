@@ -256,12 +256,12 @@ class DadataApiTests {
                         TestDataConfig.getInvalidToken()
                 );
 
-        assertEquals(
-                TestDataConfig
-                        .getInvalidTokenStatus(),
-                response.statusCode(),
-                "Для невалидного token ожидается заданный статус"
-        );
+        int expectedStatus =
+                TestDataConfig.getInvalidTokenStatus();
+
+        response.then()
+                .log().ifValidationFails()
+                .statusCode(expectedStatus);
     }
     @Test
     @DisplayName("POST: запрос без token возвращает 401")
@@ -276,12 +276,12 @@ class DadataApiTests {
                         requestBody
                 );
 
-        assertEquals(
-                TestDataConfig
-                        .getMissingTokenStatus(),
-                response.statusCode(),
-                "Для запроса без token ожидается заданный статус"
-        );
+        int expectedStatus =
+                TestDataConfig.getMissingTokenStatus();
+
+        response.then()
+                .log().ifValidationFails()
+                .statusCode(expectedStatus);
     }
 
     @DisplayName("POST: некорректный query возвращает пустой список подсказок")
